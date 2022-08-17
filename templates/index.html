@@ -1,0 +1,49 @@
+ <!DOCTYPE html>
+<html lang="en" dir="ltr">
+ <head>
+   <meta charset="utf-8">
+   <title>Flask Parent Template</title>
+   <link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.css') }}">
+ </head>
+ <body>
+    <!-- <header>
+      <div class="container">
+        <h1 class="logo">First Web App</h1>
+        <strong><nav>
+          <ul class="menu">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('index') }}">About</a></li>
+          </ul>
+        </nav></strong>
+      </div>
+    </header>
+    
+    {% block content %}
+    {% endblock %} -->
+    
+<table class="table table-dark table-hover" style="margin-top:20px;margin-bottom:20px;margin-left:20px;margin-right:50px;">
+ <thead>
+    <th>Light Code</th>
+    <th>Light No</th>
+    <th>Light Status</th>
+    <th>Street No</th>
+    <th>Date</th>
+    <th>Time</th>
+  </thead>
+  <tbody>
+  {% for i in led_data %}
+    <tr>
+    <td>{{i['light_code']}}</td>
+    <td>{{i['light_no']}}</td>
+    <td>{{i['light_status']}}</td>  
+    <td>{{i['street_no']}}</td>
+    <td>{{i['date']}}</td>
+    <td>{{i['time']}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+ </body>
+</html>

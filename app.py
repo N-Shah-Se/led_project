@@ -1,12 +1,19 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template
 import logging as logger
+import datetime
+
 
 
 logger.basicConfig(level="DEBUG")
 
 
-flaskAppInstance = Flask(__name__, instance_relative_config=True)
+flaskAppInstance = Flask(
+	__name__,
+    instance_relative_config=False,
+    template_folder="templates",
+    static_folder="static"
+)
 
 ### DB part
 
@@ -36,12 +43,16 @@ class led_db(db.Model):
 	light_no = db.Column(db.String(10))  
 	light_status = db.Column(db.String(20))
 	street_no = db.Column(db.String(10))
+	date = db.Column(db.String(20))
+	time = db.Column(db.String(20))
 	
 	def __init__(self, light_code, light_no, light_status,street_no):
-	   self.light_code = light_code
-	   self.light_no = light_no
-	   self.light_status = light_status
-	   self.street_no = street_no
+		ts = datetime.datetime.now()
+		self.light_code = light_code
+		self.light_no = light_no
+		self.light_status = light_status
+		self.date = str(ts.date())
+		self.time = str(ts.time()).split('.')[0]
 
 
 ###
@@ -66,6 +77,7 @@ from paho import mqtt
 address = "882bf8e5c2354d2785ab4b8d065f81f5.s1.eu.hivemq.cloud"
 username = 'nshah'
 password = 'Nasir123'
+MQTT_KEEPALIVE_INTERVAL = 60*24
 # address = 'test.mosquitto.org'
 
 # setting callbacks for different events to see if it works, print the message etc.
@@ -97,9 +109,10 @@ def on_message(client, userdata, msg):
 # client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
 db.create_all()
 
+
 @flaskAppInstance.route('/')
 def index():
-	
+	# db.create_all()
 	client = paho.Client()
 	client.on_connect = on_connect
 
@@ -108,7 +121,7 @@ def index():
 	# set username and password
 	client.username_pw_set(username, password)
 	# connect to HiveMQ Cloud on port 8883 (default for MQTT)
-	client.connect(address, 8883)
+	client.connect(address, 8883,MQTT_KEEPALIVE_INTERVAL)
 
 	# setting callbacks, use separate functions like above for better visibility
 	client.on_subscribe = on_subscribe
@@ -133,13 +146,15 @@ def show():
 		data_dict['light_no'] = i.light_no
 		data_dict['street_no'] = i.street_no
 		data_dict['light_status'] = i.light_status
+		data_dict['date'] = i.date
+		data_dict['time'] = i.time
 		led_data.append(data_dict)
 	print(f'{led_data}')
-	return 'data .......'
+	return render_template('index.html',led_data=led_data) 
 
 
 
 
 if __name__ == '__main__':
    db.create_all()
-   flaskAppInstance.run(debug = True)
+   flaskAppInstance.run(host='0.0.0.0',port=5003,debug = True)
